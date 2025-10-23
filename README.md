@@ -20,3 +20,7 @@ flask run
 
 ## Try it out
 http://127.0.0.1:5000/
+
+## Radar integration
+
+Providing `RADAR_PUBLISHABLE_KEY` and `RADAR_SECRET_KEY` environment variables enables automatic address validation and geofence creation through Radar.  When those values are not present the application still works for development: new families are persisted without triggering any Radar API calls and you will see a warning in the server logs reminding you that geofences were skipped.
