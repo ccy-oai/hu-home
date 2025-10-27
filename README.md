@@ -20,3 +20,6 @@ flask run
 
 ## Try it out
 http://127.0.0.1:5000/
+
+## Just for fun
+Why did the websocket server refuse to leave home? It already had too many connections to maintain.
