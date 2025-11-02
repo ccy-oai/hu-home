@@ -5,8 +5,10 @@ blueprint = Blueprint('home', __name__)
 
 @blueprint.route('/')
 def index():
-    families = Family.query.all()
-    family = None
-    if families:
-        family = families[0]
-    return render_template('home/client.html', **{'ip': request.remote_addr, 'familyId': family.id})
+    family = Family.query.first()
+    family_id = family.id if family else None
+    return render_template(
+        'home/client.html',
+        ip=request.remote_addr,
+        familyId=family_id
+    )
