@@ -20,3 +20,7 @@ flask run
 
 ## Try it out
 http://127.0.0.1:5000/
+
+## Tips
+
+- On macOS or Linux, activate the virtual environment with `source venv/bin/activate` instead of `venv\Scripts\activate`.
