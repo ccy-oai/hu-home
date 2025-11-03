@@ -12,6 +12,8 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+> **Note:** On macOS/Linux, activate the virtual environment with `source venv/bin/activate`.
+
 ## Running Server
 ```
 venv\Scripts\activate
