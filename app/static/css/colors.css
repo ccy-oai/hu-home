@@ -1,0 +1,26 @@
+.bg-gray-dark {
+  background-color: #111827 !important;
+}
+
+.text-inherit {
+  color: inherit !important;
+}
+
+.link-reset {
+  text-decoration: none;
+}
+
+.link-reset:hover,
+.link-reset:focus {
+  text-decoration: none;
+  color: inherit;
+}
+
+.text-white {
+  color: #ffffff !important;
+}
+
+.navbar-dark .navbar-brand,
+.navbar-dark .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.9);
+}

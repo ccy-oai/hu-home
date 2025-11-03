@@ -1,61 +1,262 @@
-<head>
-    <title>Hu Home Test Client</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-</head>
-<body>
-    <div>Loading...</div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
-    <script type="text/javascript" charset="utf-8">
-        var sent = 0;
-        var clientId = Date.now();
-        var ip = "{{ip}}";
-        var socket = io('/', {
-            transportOptions: {
-                polling: {
-                    extraHeaders: {
-                        'x-client-id': clientId,
-                        'x-family-id': "{{familyId}}"
-                    }
-                }
+{% extends "layouts/layout.html" %}
+
+{% block header %}
+<section class="py-5 bg-white border-bottom">
+  <div class="container">
+    <h1 class="display-4 mb-3">Welcome home 👋</h1>
+    <p class="lead text-muted mb-0">
+      Keep an eye on everyone&rsquo;s arrival in real time. This page updates automatically as each person
+      checks in from their device.
+    </p>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<main class="py-5 bg-light">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h2 class="h4 card-title">Your device</h2>
+            <p class="small text-muted">
+              We refresh your location every five seconds while this page stays open.
+            </p>
+            <dl class="mb-0">
+              <dt class="small text-uppercase text-muted">Status</dt>
+              <dd class="font-weight-medium" id="location-status">Checking permissions&hellip;</dd>
+
+              <dt class="small text-uppercase text-muted mt-3">Coordinates</dt>
+              <dd class="font-weight-medium roster-location" id="location-coordinates">—</dd>
+
+              <dt class="small text-uppercase text-muted mt-3">Accuracy</dt>
+              <dd class="font-weight-medium" id="location-accuracy">—</dd>
+
+              <dt class="small text-uppercase text-muted mt-3">Last shared</dt>
+              <dd class="font-weight-medium" id="location-timestamp">—</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
+              <div>
+                <h2 class="h4 card-title mb-0">Family roster</h2>
+                <p class="small text-muted mb-0">Live view of everyone currently sharing their location.</p>
+              </div>
+              <span class="badge badge-pill badge-primary mt-3 mt-md-0" id="connected-count">0 online</span>
+            </div>
+            <div class="alert alert-info mb-4" id="connection-status" role="status">
+              Connecting to live updates&hellip;
+            </div>
+            <div class="text-center text-muted py-5" id="roster-empty">
+              No live updates yet. We&rsquo;ll show everyone as soon as we hear from them.
+            </div>
+            <div class="list-group list-group-flush" id="roster-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  (function() {
+    const clientId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const familyId = "{{ familyId }}";
+    const ipAddress = "{{ ip }}";
+    const hasFamily = Boolean(familyId);
+
+    const statusBanner = document.getElementById('connection-status');
+    const rosterEmpty = document.getElementById('roster-empty');
+    const rosterList = document.getElementById('roster-list');
+    const connectedBadge = document.getElementById('connected-count');
+
+    const locationStatus = document.getElementById('location-status');
+    const locationCoords = document.getElementById('location-coordinates');
+    const locationAccuracy = document.getElementById('location-accuracy');
+    const locationTimestamp = document.getElementById('location-timestamp');
+
+    const formatCoordinate = (value) => {
+      if (value === undefined || value === null || Number.isNaN(value)) {
+        return '—';
+      }
+      return Number(value).toFixed(5);
+    };
+
+    const formatRelativeTime = (timestampSeconds) => {
+      if (!timestampSeconds) {
+        return 'No update yet';
+      }
+      const now = Date.now();
+      const updatedAt = new Date(timestampSeconds * 1000).getTime();
+      const deltaSeconds = Math.max(0, Math.round((now - updatedAt) / 1000));
+
+      if (deltaSeconds < 5) {
+        return 'just now';
+      }
+      if (deltaSeconds < 60) {
+        return `${deltaSeconds} seconds ago`;
+      }
+      const deltaMinutes = Math.round(deltaSeconds / 60);
+      if (deltaMinutes < 60) {
+        return `${deltaMinutes} minute${deltaMinutes === 1 ? '' : 's'} ago`;
+      }
+      const deltaHours = Math.round(deltaMinutes / 60);
+      if (deltaHours < 24) {
+        return `${deltaHours} hour${deltaHours === 1 ? '' : 's'} ago`;
+      }
+      const deltaDays = Math.round(deltaHours / 24);
+      return `${deltaDays} day${deltaDays === 1 ? '' : 's'} ago`;
+    };
+
+    const buildRosterItem = (id, details) => {
+      const item = document.createElement('div');
+      item.className = 'list-group-item list-group-item-action flex-column align-items-start roster-item';
+
+      const header = document.createElement('div');
+      header.className = 'd-flex w-100 justify-content-between align-items-center';
+
+      const name = document.createElement('h3');
+      name.className = 'h5 mb-1';
+      name.textContent = details && details.ip ? details.ip : `Device ${id}`;
+
+      const lastSeen = document.createElement('small');
+      lastSeen.className = 'text-muted font-italic';
+      lastSeen.textContent = formatRelativeTime(details ? details.timestamp : undefined);
+
+      header.appendChild(name);
+      header.appendChild(lastSeen);
+
+      const body = document.createElement('div');
+      body.className = 'mt-2';
+
+      const coordinates = document.createElement('p');
+      coordinates.className = 'small text-muted mb-1';
+      if (details && details.geo) {
+        coordinates.innerHTML = `<strong>Coordinates:</strong> ${formatCoordinate(details.geo.latitude)}°, ${formatCoordinate(details.geo.longitude)}°`;
+      } else {
+        coordinates.innerHTML = '<strong>Coordinates:</strong> Unavailable';
+      }
+
+      const accuracy = document.createElement('p');
+      accuracy.className = 'small text-muted mb-1';
+      if (details && details.geo && details.geo.accuracy !== undefined && details.geo.accuracy !== null) {
+        accuracy.innerHTML = `<strong>Accuracy:</strong> ±${Math.round(details.geo.accuracy)} meters`;
+      } else {
+        accuracy.innerHTML = '<strong>Accuracy:</strong> Unknown';
+      }
+
+      const identifier = document.createElement('p');
+      identifier.className = 'small text-muted mb-0';
+      identifier.innerHTML = `<strong>Client ID:</strong> ${id}`;
+
+      body.appendChild(coordinates);
+      body.appendChild(accuracy);
+      body.appendChild(identifier);
+
+      item.appendChild(header);
+      item.appendChild(body);
+
+      return item;
+    };
+
+    const renderRoster = (members = {}) => {
+      const entries = Object.entries(members).filter(([, details]) => Boolean(details));
+      const count = entries.length;
+
+      connectedBadge.textContent = `${count} online`;
+      rosterList.innerHTML = '';
+
+      if (!count) {
+        rosterEmpty.classList.remove('d-none');
+        return;
+      }
+
+      rosterEmpty.classList.add('d-none');
+
+      entries
+        .sort((a, b) => (b[1]?.timestamp || 0) - (a[1]?.timestamp || 0))
+        .forEach(([id, details]) => rosterList.appendChild(buildRosterItem(id, details)));
+    };
+
+    let socket = null;
+
+    if (hasFamily) {
+      socket = io('/', {
+        transportOptions: {
+          polling: {
+            extraHeaders: {
+              'x-client-id': clientId,
+              'x-family-id': familyId
             }
-        });
-
-        sendUpdate = (pos) => {
-            let {latitude, longitude, accuracy} = pos.coords;
-            sent = (new Date(pos.timestamp)).toISOString();
-            console.log({latitude, longitude, accuracy})
-            socket.emit('update', {
-                clientId,
-                ip,
-                geo: {latitude, longitude, accuracy}, 
-                timestamp: sent
-            });
+          }
         }
+      });
 
-        updateList = (clients) => {
-            document.body.innerHTML = "";
-            for (const id of Object.keys(clients)) {
-                if (!clients[id]) {
-                    continue;
-                }
-                const {geo, timestamp} = clients[id];
-                let ip = clients[id];
-                div = document.createElement('div');
-                div.innerText = `${JSON.stringify({[id]: {ip, geo, time: new Date(timestamp*1000)}})}`;
-                document.body.appendChild(div);
-            }
-        }
+      socket.on('connect', function() {
+        statusBanner.classList.remove('alert-info', 'alert-warning');
+        statusBanner.classList.add('alert-success');
+        statusBanner.textContent = 'Connected. The roster will update automatically.';
+      });
 
-        socket.on('connect', function() {
-            setInterval(()=>{
-                console.log('Get Location')
-                navigator.geolocation.getCurrentPosition(pos => sendUpdate(pos));
-            }, 5000)
-        });
+      socket.on('disconnect', function() {
+        statusBanner.classList.remove('alert-info', 'alert-success');
+        statusBanner.classList.add('alert-warning');
+        statusBanner.textContent = 'Connection lost. Trying to reconnect&hellip;';
+      });
 
-        socket.on('roster', function(data) {
-            console.log(`Get list of everybody: ${JSON.stringify(data)}`)
-            updateList(data.members);
-        });
-        </script>
-    </body>
+      socket.on('roster', function(data) {
+        renderRoster(data ? data.members : {});
+      });
+    } else {
+      statusBanner.classList.remove('alert-info');
+      statusBanner.classList.add('alert-warning');
+      statusBanner.textContent = 'No family has been set up yet. Create a family to start sharing locations.';
+    }
+
+    const sendUpdate = (pos) => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      const timestamp = new Date(pos.timestamp);
+
+      locationStatus.textContent = 'Location shared';
+      locationStatus.classList.remove('text-danger');
+      locationCoords.textContent = `${formatCoordinate(latitude)}°, ${formatCoordinate(longitude)}°`;
+      locationAccuracy.textContent = accuracy ? `${Math.round(accuracy)} meters` : '—';
+      locationTimestamp.textContent = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      if (!socket || !socket.connected) {
+        return;
+      }
+
+      socket.emit('update', {
+        clientId,
+        ip: ipAddress,
+        geo: { latitude, longitude, accuracy },
+        timestamp: timestamp.toISOString()
+      });
+    };
+
+    const handleLocationError = (error) => {
+      locationStatus.textContent = error && error.message ? error.message : 'Location unavailable';
+      locationStatus.classList.add('text-danger');
+    };
+
+    if ('geolocation' in navigator) {
+      locationStatus.textContent = 'Awaiting permission&hellip;';
+
+      const requestPosition = () => navigator.geolocation.getCurrentPosition(sendUpdate, handleLocationError);
+
+      requestPosition();
+      setInterval(requestPosition, 5000);
+    } else {
+      locationStatus.textContent = 'Geolocation is not supported by your browser.';
+      locationStatus.classList.add('text-danger');
+    }
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,88 @@
+body {
+  font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fb;
+  color: #1f2933;
+  min-height: 100vh;
+}
+
+.navbar {
+  box-shadow: 0 0.5rem 1.5rem rgba(15, 23, 42, 0.08);
+}
+
+.page-header,
+main.bg-light {
+  background-color: #f5f7fb;
+}
+
+.card {
+  border: none;
+  border-radius: 1rem;
+}
+
+.card.shadow-sm {
+  box-shadow: 0 1.25rem 1.5625rem rgba(15, 23, 42, 0.08);
+}
+
+.card-title {
+  color: #111827;
+}
+
+.roster-location {
+  font-family: "Roboto Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.roster-item + .roster-item {
+  margin-top: 0.75rem;
+}
+
+.roster-item {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.list-group-flush > .roster-item {
+  border-width: 1px;
+}
+
+.badge-primary {
+  background-color: #2563eb;
+}
+
+.alert {
+  border-radius: 0.75rem;
+}
+
+.alert-success {
+  background-color: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.alert-warning {
+  background-color: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.alert-info {
+  background-color: #e0f2fe;
+  border-color: #7dd3fc;
+  color: #0c4a6e;
+}
+
+.alert-danger {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+@media (max-width: 767.98px) {
+  .card {
+    border-radius: 0.75rem;
+  }
+
+  .roster-item {
+    padding: 1rem;
+  }
+}
