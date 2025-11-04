@@ -20,3 +20,13 @@ flask run
 
 ## Try it out
 http://127.0.0.1:5000/
+
+## Health check endpoint
+
+The API exposes a lightweight health check that can be used by uptime monitors or load balancer probes:
+
+```
+curl http://127.0.0.1:5000/api/health
+```
+
+The response includes the deployment environment and whether the instance is running with debug mode enabled.

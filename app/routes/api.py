@@ -8,6 +8,17 @@ from app.services.radar import radar_client
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 
+
+@blueprint.route('/health')
+def health_check():
+    """Simple endpoint that upstream services can use for health probes."""
+    return {
+        'status': 'ok',
+        'environment': settings.ENV,
+        'debug': settings.DEBUG,
+    }, 200
+
+
 @blueprint.route('/client-config')
 def client_config():
     return { 
