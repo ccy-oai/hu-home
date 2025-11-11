@@ -2,6 +2,8 @@
 Hu's home (pronounced - who's home) is an app to track if everybody in a family is home
 This repo contains Hu's home websocket server and a simple web client
 
+Fun fact: the developers like to say that if someone asks, "Who's home?" you can answer, "Hu's home"—and that's the kind of joke that never gets old.
+
 # Local Development
 
 ## Initial
