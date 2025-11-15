@@ -1,0 +1,3 @@
+Dad Joke #067
+Why did the debugger write poetry in the logs?
+Because it wanted more meaningful output.

@@ -1,0 +1,3 @@
+Dad Joke #047
+Why did the debugger start a garden in production?
+Because it heard the environment needed seeding.

@@ -1,0 +1,3 @@
+Dad Joke #066
+Why did the compiler write poetry in the logs?
+Because it wanted more meaningful output.

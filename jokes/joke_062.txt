@@ -1,0 +1,3 @@
+Dad Joke #062
+Why did the database write poetry in the logs?
+Because it wanted more meaningful output.

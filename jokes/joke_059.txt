@@ -1,0 +1,3 @@
+Dad Joke #059
+Why did the data scientist start a garden in production?
+Because it heard the environment needed seeding.
