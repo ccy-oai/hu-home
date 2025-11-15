@@ -1,0 +1,3 @@
+Joke 027
+Why did the developer stash file 027 in the jokes folder?
+Because its only dependency is uncontrollable laughter.

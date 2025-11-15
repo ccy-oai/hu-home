@@ -1,0 +1,3 @@
+Joke 089
+Why did the developer stash file 089 in the jokes folder?
+Because code reviews always end with applause.

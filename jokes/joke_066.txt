@@ -1,0 +1,3 @@
+Joke 066
+Why did the developer stash file 066 in the jokes folder?
+Because the QA team approved it for maximum chuckles.
