@@ -1,101 +1,86 @@
-import os
-from flask import request, Blueprint
-from flask_socketio import SocketIO, emit, join_room, leave_room, close_room
-from datetime import datetime
-from app.services.radar import radar_client
-from threading import Timer
+"""Socket.IO helpers and presence registry."""
+from __future__ import annotations
 
-STALE_CLIENT_THRESHOLD = 30 # seconds
-blueprint = Blueprint('update', __name__, url_prefix='/update')
+from collections import defaultdict
+from datetime import datetime, timedelta
+from typing import Dict, Optional, Set, Tuple
 
-def init_socketio(app):
-  socketio = SocketIO()
-  socketio.init_app(app, logger=True, engineio_logger=True, cors_allowed_origins='*')
-  register_handlers(socketio)
-  return socketio
+from flask import request
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
-def register_handlers(socketio):
-  families = {}
-  clients = {}
+from . import settings
 
-  @socketio.on('connect')
-  def handle_connect():
-    user_id = request.headers.get('x-client-id')
-    family_id = request.headers.get('x-family-id')
-    
-    if family_id not in families:
-      families[family_id] = {user_id}
-    else:
-      families[family_id].add(user_id)
-    join_room(family_id)
+socketio = SocketIO(async_mode="threading", cors_allowed_origins="*")
 
-  @socketio.on('disconnect')
-  def handle_disconnect():
-    user_id = request.headers.get('x-client-id')
-    family_id = request.headers.get('x-family-id')
+_FAMILY_ROOMS: Dict[str, Set[str]] = defaultdict(set)
+_LAST_SEEN: Dict[str, datetime] = {}
 
-    families[family_id].remove(user_id)
-    if family_id in families and not families[family_id]:
-      families.pop(family_id)
-      close_room(family_id)
 
-    clients.pop(user_id)
-    leave_room(family_id)
+def register_socketio_events() -> None:
+    from app.services import family_service
 
-  @socketio.on('update')
-  def handle_my_custom_event(json):
-    user_id = request.headers.get('x-client-id')
-    family_id = request.headers.get('x-family-id')
+    @socketio.on("join_family")
+    def handle_join(data: Optional[dict] = None):
+        family_id, user_id = _resolve_identifiers(data)
+        if not family_id or not user_id:
+            return
 
-    json['timestamp'] = int(datetime.now().timestamp())
-    clients[user_id] = json
-    # cleanup_clients()
-    send_roster(family_id)
+        touch_presence(family_id, user_id)
+        join_room(family_id)
+        emit("roster", family_service.roster_payload(family_service.get_family_or_404(family_id)), room=family_id)
 
-  def send_roster(family_id):    
-    emit('roster', {
-      'id': family_id,
-      'time': str(datetime.now().isoformat()), 
-      'members': {uid: clients.get(uid) for uid in families.get(family_id)}
-    }, room=family_id)
+    @socketio.on("leave_family")
+    def handle_leave(data: Optional[dict] = None):
+        family_id, user_id = _resolve_identifiers(data)
+        if not family_id or not user_id:
+            return
+        leave_room(family_id)
+        remove_presence(family_id, user_id)
+        emit("roster", family_service.roster_payload(family_service.get_family_or_404(family_id)), room=family_id)
 
-  def cleanup_clients():
-    stale_clients = []
-    current_time = datetime.now().timestamp()
-    for key,value in clients.items():
-      if int(current_time - STALE_CLIENT_THRESHOLD) > value['timestamp']:
-        stale_clients.append(key)
-    for client in stale_clients:
-      clients.pop(client)
+    @socketio.on("disconnect")
+    def handle_disconnect():  # pragma: no cover - depends on socket layer
+        family_id, user_id = _resolve_identifiers(None)
+        if family_id and user_id:
+            remove_presence(family_id, user_id)
 
-  def remove_client(user_id, family_id):
-    families[family_id].remove(user_id)
-    if family_id in families and not families[family_id]:
-      families.pop(family_id)
 
-    clients.pop(user_id)
+def broadcast_roster(family_id: str) -> None:
+    from app.services import family_service
 
-  @blueprint.route('/event', methods=['POST'])
-  def track():
-    try:
-      payload = request.json['event']
-      if 'user_id' in payload['user']:
-        user_id = payload['user']['userId']
-      else:
-        user = radar_client.users.get(payload['user']['_id'])
-        user_id = user['userId']
+    payload = family_service.roster_payload(family_service.get_family_or_404(family_id))
+    socketio.emit("roster", payload, room=family_id)
 
-      family_id = Users.query.get(user_id).family_id
-      clients[user_id] = payload
-      if family_id not in families:
-        families[family_id] = {user_id}
-      else:
-        families[family_id].add(user_id)
-      send_roster(family_id)
-      
-      t = Timer(10.0, remove_client, args=[user_id, family_id])
-    except Exception as e:
-      print(e)
 
-    return 'OK', 200
-      
+def touch_presence(family_id: str, user_id: str) -> None:
+    _FAMILY_ROOMS[family_id].add(user_id)
+    _LAST_SEEN[user_id] = datetime.utcnow()
+    cleanup_presence()
+
+
+def remove_presence(family_id: str, user_id: str) -> None:
+    if family_id in _FAMILY_ROOMS and user_id in _FAMILY_ROOMS[family_id]:
+        _FAMILY_ROOMS[family_id].remove(user_id)
+        if not _FAMILY_ROOMS[family_id]:
+            del _FAMILY_ROOMS[family_id]
+    _LAST_SEEN.pop(user_id, None)
+
+
+def cleanup_presence() -> None:
+    """Drop stale clients so rooms don't keep growing indefinitely."""
+    threshold = datetime.utcnow() - timedelta(seconds=settings.PRESENCE_STALE_AFTER_SECONDS)
+    stale_users = [user_id for user_id, seen in _LAST_SEEN.items() if seen < threshold]
+    for user_id in stale_users:
+        _LAST_SEEN.pop(user_id, None)
+        for family_id, members in list(_FAMILY_ROOMS.items()):
+            if user_id in members:
+                members.remove(user_id)
+            if not members:
+                _FAMILY_ROOMS.pop(family_id, None)
+
+
+def _resolve_identifiers(payload: Optional[dict]) -> Tuple[Optional[str], Optional[str]]:
+    data = payload or {}
+    family_id = data.get("familyId") or request.args.get("familyId")
+    user_id = data.get("userId") or request.args.get("userId")
+    return family_id, user_id

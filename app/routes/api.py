@@ -1,93 +1,87 @@
-from flask import Blueprint, request, abort
-from app import settings
-from firebase_admin import auth
-from app.models.user import User
-from app.models.family import Family
+"""REST API for the Hu's Home platform."""
+from __future__ import annotations
+
+from flask import Blueprint, jsonify, request
+
 from app.database import db
-from app.services.radar import radar_client
+from app.models.family import Family
+from app.models.location_event import LocationEvent
+from app.services import family_service, location_service
 
-blueprint = Blueprint('api', __name__, url_prefix='/api')
+blueprint = Blueprint("api", __name__, url_prefix="/api")
 
-@blueprint.route('/client-config')
-def client_config():
-    return { 
-        'firebase': settings.FIREBASE_CLIENT_CONFIG,
-        'radar': settings.RADAR_PUBLISHABLE_KEY
-    }
 
-def list_users(fid):
-    return list(map(lambda row: row.to_dict(), User.query.filter_by(family_id=fid)))
+def _json_payload() -> dict:
+    return request.get_json(silent=True) or {}
 
-def add_user(id, email):
-    user = User.query.get(id)
-    if not user:
-        user = User(username = email, firebase_id = id)
-        db.session.add(user)
-        db.session.commit()
-    return user
 
-@blueprint.route('/get-user')
-def get_user():
-    try:
-        id_token = request.headers.get('Authorization', '').split('Bearer ')[1]
-        decoded_token = auth.verify_id_token(id_token)
-    except:
-        abort(401)
+@blueprint.get("/health")
+def healthcheck():
+    return {"status": "ok"}
 
-    uid = decoded_token['uid']
-    email = decoded_token['email']
 
-    me = add_user(uid, email)
-    family = Family.query.get(me.family_id)
-    profile = {
-        'me': me.to_dict(),
-    }
-    if family:
-        profile['family'] = family.to_dict()
-        profile['members'] = list_users(me.family_id)
-    return {'debug': decoded_token, 'profile': profile}, 200
+@blueprint.get("/families")
+def list_families():
+    families = [family.to_dict() for family in Family.query.order_by(Family.created_at.desc()).all()]
+    return jsonify({"families": families})
 
-@blueprint.route('/family', methods=['POST'])
-def family():
-    try:
-        id_token = request.headers.get('Authorization', '').split('Bearer ')[1]
-        decoded_token = auth.verify_id_token(id_token)
-        user = User.query.get(decoded_token['uid'])
-    except Exception as e:
-        print(e)
-        abort(401)
 
-    if user and not user.family_id:
-        payload = request.json
-        family = Family(payload)
-        user.family_id = family.id
-        user.name = payload.get('name')
-        db.session.add(family)
-        search_result = radar_client.search.autocomplete(
-            query=f'{family.address}, {family.city}, {family.zip}, {payload["country"]}',
-            near=[payload['latitude'], payload['longitude']]
-            )
+@blueprint.post("/families")
+def create_family():
+    payload = _json_payload()
+    family = family_service.create_family(payload)
+    return family.to_dict(), 201
 
-        if not search_result:
-            abort(404)
-        address = search_result[0]
-        create_result = radar_client.geofences.create({
-            'description': family.name,
-            'tag': 'home',
-            'externalId': family.id,
-            'type': 'circle',
-            'radius': 100,
-            'coordinates': [address.longitude, address.latitude],
-            'enabled': True
-        })
-        family.geofence_id = create_result._id
-        try:
-            db.session.commit()
-        except Exception as e:
-            print(e)
-            radar_client.geofences.delete(create_result._id)
-            abort(500)
-        return { 'family_id': family.id }, 200
-    
-    return abort(409)
 
+@blueprint.get("/families/<family_id>")
+def get_family(family_id: str):
+    family = family_service.get_family_or_404(family_id)
+    return family.to_dict()
+
+
+@blueprint.get("/families/<family_id>/members")
+def list_members(family_id: str):
+    family = family_service.get_family_or_404(family_id)
+    return jsonify({"members": [member.to_dict() for member in family.members]})
+
+
+@blueprint.post("/families/<family_id>/members")
+def create_member(family_id: str):
+    family = family_service.get_family_or_404(family_id)
+    member = family_service.create_member(family, _json_payload())
+    return {"member": member.to_dict(), "family": family.to_dict()}, 201
+
+
+@blueprint.patch("/families/<family_id>/members/<member_id>")
+def update_member(family_id: str, member_id: str):
+    family = family_service.get_family_or_404(family_id)
+    member = family_service.get_member_or_404(family, member_id)
+    member.update_profile(**_json_payload())
+    db.session.commit()
+    return member.to_dict()
+
+
+@blueprint.post("/families/<family_id>/members/<member_id>/locations")
+def create_location(family_id: str, member_id: str):
+    family = family_service.get_family_or_404(family_id)
+    member = family_service.get_member_or_404(family, member_id)
+    event = location_service.record_location(member, _json_payload())
+    return {"event": event.to_dict(), "member": member.to_dict()}, 201
+
+
+@blueprint.get("/families/<family_id>/roster")
+def family_roster(family_id: str):
+    family = family_service.get_family_or_404(family_id)
+    return family_service.roster_payload(family)
+
+
+@blueprint.get("/families/<family_id>/history")
+def location_history(family_id: str):
+    family_service.get_family_or_404(family_id)
+    events = (
+        LocationEvent.query.filter_by(family_id=family_id)
+        .order_by(LocationEvent.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    return {"events": [event.to_dict() for event in events]}
