@@ -1,12 +1,19 @@
+"""HTML views for the lightweight client."""
+from __future__ import annotations
+
+from flask import Blueprint, render_template
+
 from app.models.family import Family
-from flask import Blueprint, render_template, request
 
-blueprint = Blueprint('home', __name__)
+blueprint = Blueprint("home", __name__)
 
-@blueprint.route('/')
+
+@blueprint.route("/")
 def index():
-    families = Family.query.all()
-    family = None
-    if families:
-        family = families[0]
-    return render_template('home/client.html', **{'ip': request.remote_addr, 'familyId': family.id})
+    families = Family.query.order_by(Family.created_at.desc()).all()
+    default_family = families[0] if families else None
+    return render_template(
+        "home/dashboard.html",
+        families=families,
+        default_family=default_family,
+    )
