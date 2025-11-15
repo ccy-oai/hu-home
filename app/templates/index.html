@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hu's Home</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 2rem 1rem;
+        background: radial-gradient(circle at top, #f7f9fc, #f0f4ff);
+        min-height: 100vh;
+        color: #0f172a;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+      }
+      header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+      }
+      h1 {
+        font-size: clamp(1.8rem, 5vw, 2.8rem);
+        margin: 0;
+      }
+      p {
+        margin: 0.5rem 0 0;
+      }
+      section {
+        margin-bottom: 2rem;
+      }
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: flex-end;
+      }
+      label {
+        flex: 1 1 220px;
+        display: flex;
+        flex-direction: column;
+        font-weight: 600;
+        color: #475569;
+      }
+      input {
+        padding: 0.65rem 0.8rem;
+        border-radius: 0.6rem;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        font-size: 1rem;
+      }
+      button {
+        appearance: none;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.8rem;
+        background: linear-gradient(120deg, #6366f1, #14b8a6);
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 120ms ease, filter 120ms ease;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      button:not(:disabled):hover {
+        transform: translateY(-1px);
+        filter: brightness(1.02);
+      }
+      #roster {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .card {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 0.75rem;
+        padding: 0.9rem 1rem;
+        background: #fff;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+      }
+      .card small {
+        display: block;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+      }
+      code {
+        background: rgba(15, 23, 42, 0.08);
+        border-radius: 0.5rem;
+        padding: 0.15rem 0.4rem;
+        font-size: 0.9rem;
+      }
+      .muted {
+        color: #64748b;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Hu's Home</h1>
+        <p class="muted">Share quick "I'm home" check-ins with your family. This demo ships with a starter family called <strong>{{ family.name }}</strong>.</p>
+      </header>
+
+      <section>
+        <h2>Join the family</h2>
+        <form id="join-form">
+          <label>
+            Display name
+            <input type="text" id="display-name" name="display_name" placeholder="e.g. Jamie" required />
+          </label>
+          <input type="hidden" id="family-id" value="{{ family.id }}" />
+          <button type="submit">Create my profile</button>
+        </form>
+        <p id="member-status" class="muted"></p>
+      </section>
+
+      <section>
+        <h2>Roster</h2>
+        <div id="roster" class="muted">Nobody has checked in yet.</div>
+      </section>
+
+      <section>
+        <h2>Check in</h2>
+        <p class="muted">Click once you're ready to broadcast your status. We'll try to capture your browser's geolocation when available.</p>
+        <button id="ping-btn" type="button" disabled>I'm home</button>
+      </section>
+
+      <section>
+        <h2>API quickstart</h2>
+        <p class="muted">Everything you see here is powered by a small JSON API. Example:</p>
+        <pre><code>curl -X POST {{ url_for('api.create_member', family_id=family.id, _external=True) }} \
+-H 'Content-Type: application/json' \
+-d '{"display_name":"Casey"}'</code></pre>
+      </section>
+    </main>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-1kRDeo63eNbUsVTNff7kwh28ykVfoCEN0z7dxyzKDn5XxhxL7sRKqzZo4PM5XgS5" crossorigin="anonymous"></script>
+    <script>
+      const familyId = document.getElementById('family-id').value;
+      const rosterEl = document.getElementById('roster');
+      const joinForm = document.getElementById('join-form');
+      const statusEl = document.getElementById('member-status');
+      const pingBtn = document.getElementById('ping-btn');
+      const storageKey = `hu-home::${familyId}`;
+      let socket;
+      let currentMember = null;
+
+      const renderRoster = (payload) => {
+        if (!payload || !payload.members || payload.members.length === 0) {
+          rosterEl.textContent = 'Nobody has checked in yet.';
+          rosterEl.classList.add('muted');
+          return;
+        }
+
+        rosterEl.innerHTML = '';
+        rosterEl.classList.remove('muted');
+        payload.members
+          .sort((a, b) => (b.last_seen_at || '').localeCompare(a.last_seen_at || ''))
+          .forEach((member) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const status = member.status || 'unknown';
+            const lastSeen = member.last_seen_at ? new Date(member.last_seen_at).toLocaleString() : 'never';
+            card.innerHTML = `<strong>${member.display_name}</strong><br/><span class="muted">${status}</span><small>Last seen ${lastSeen}</small>`;
+            rosterEl.appendChild(card);
+          });
+      };
+
+      const bootSocket = () => {
+        if (socket) {
+          return;
+        }
+        socket = io();
+        socket.on('connect', () => {
+          if (currentMember) {
+            socket.emit('join', { familyId, memberId: currentMember.id });
+          }
+        });
+        socket.on('roster', renderRoster);
+        socket.on('error', (msg) => {
+          console.warn('Socket error', msg);
+        });
+      };
+
+      const saveMember = (member) => {
+        currentMember = member;
+        localStorage.setItem(storageKey, JSON.stringify(member));
+        statusEl.textContent = `Signed in as ${member.display_name}`;
+        pingBtn.disabled = false;
+        bootSocket();
+        socket.emit('join', { familyId, memberId: member.id });
+      };
+
+      const maybeHydrateMember = () => {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey));
+          if (saved && saved.id) {
+            currentMember = saved;
+            statusEl.textContent = `Welcome back, ${saved.display_name}`;
+            pingBtn.disabled = false;
+            bootSocket();
+            socket.emit('join', { familyId, memberId: saved.id });
+          }
+        } catch (err) {
+          console.warn('Unable to load saved member', err);
+        }
+      };
+
+      joinForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const displayName = document.getElementById('display-name').value.trim();
+        if (!displayName) {
+          return;
+        }
+        const response = await fetch(`/api/families/${familyId}/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ display_name: displayName })
+        });
+        if (!response.ok) {
+          const problem = await response.text();
+          statusEl.textContent = problem || 'Unable to create member.';
+          return;
+        }
+        const { member } = await response.json();
+        saveMember(member);
+        event.target.reset();
+      });
+
+      const sendPing = (payload) => {
+        if (!currentMember) {
+          return;
+        }
+        fetch(`/api/families/${familyId}/members/${currentMember.id}/ping`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch((err) => console.error(err));
+      };
+
+      pingBtn.addEventListener('click', () => {
+        if (!currentMember) {
+          alert('Create a member first.');
+          return;
+        }
+        pingBtn.disabled = true;
+        const finalize = (extra = {}) => {
+          sendPing({ status: 'home', context: extra.context || 'Manual check-in', ...extra });
+          pingBtn.disabled = false;
+        };
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const { latitude, longitude, accuracy } = pos.coords;
+              finalize({ latitude, longitude, accuracy, context: 'Browser geolocation' });
+            },
+            () => finalize()
+          );
+        } else {
+          finalize();
+        }
+      });
+
+      maybeHydrateMember();
+      bootSocket();
+    </script>
+  </body>
+</html>
