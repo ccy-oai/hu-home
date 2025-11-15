@@ -1,0 +1,3 @@
+Dad Joke #071
+Why did the cloud instance write poetry in the logs?
+Because it wanted more meaningful output.

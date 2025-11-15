@@ -1,0 +1,3 @@
+Dad Joke #073
+Why did the QA tester write poetry in the logs?
+Because it wanted more meaningful output.

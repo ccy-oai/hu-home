@@ -1,0 +1,106 @@
+# Developer Joke Files
+
+This directory collects 100 short, developer-themed jokes, each stored in its own text file for easy reuse.
+
+## Index
+
+- `joke_001.txt`: Why did the server take a nap on the keyboard? Because it needed a quick power save.
+- `joke_002.txt`: Why did the database take a nap on the keyboard? Because it needed a quick power save.
+- `joke_003.txt`: Why did the frontend engineer take a nap on the keyboard? Because it needed a quick power save.
+- `joke_004.txt`: Why did the backend engineer take a nap on the keyboard? Because it needed a quick power save.
+- `joke_005.txt`: Why did the router take a nap on the keyboard? Because it needed a quick power save.
+- `joke_006.txt`: Why did the compiler take a nap on the keyboard? Because it needed a quick power save.
+- `joke_007.txt`: Why did the debugger take a nap on the keyboard? Because it needed a quick power save.
+- `joke_008.txt`: Why did the coffee mug take a nap on the keyboard? Because it needed a quick power save.
+- `joke_009.txt`: Why did the API take a nap on the keyboard? Because it needed a quick power save.
+- `joke_010.txt`: Why did the container take a nap on the keyboard? Because it needed a quick power save.
+- `joke_011.txt`: Why did the cloud instance take a nap on the keyboard? Because it needed a quick power save.
+- `joke_012.txt`: Why did the version control system take a nap on the keyboard? Because it needed a quick power save.
+- `joke_013.txt`: Why did the QA tester take a nap on the keyboard? Because it needed a quick power save.
+- `joke_014.txt`: Why did the automation script take a nap on the keyboard? Because it needed a quick power save.
+- `joke_015.txt`: Why did the UI component take a nap on the keyboard? Because it needed a quick power save.
+- `joke_016.txt`: Why did the command line take a nap on the keyboard? Because it needed a quick power save.
+- `joke_017.txt`: Why did the keyboard take a nap on the keyboard? Because it needed a quick power save.
+- `joke_018.txt`: Why did the mouse pointer take a nap on the keyboard? Because it needed a quick power save.
+- `joke_019.txt`: Why did the data scientist take a nap on the keyboard? Because it needed a quick power save.
+- `joke_020.txt`: Why did the product manager take a nap on the keyboard? Because it needed a quick power save.
+- `joke_021.txt`: Why did the server bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_022.txt`: Why did the database bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_023.txt`: Why did the frontend engineer bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_024.txt`: Why did the backend engineer bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_025.txt`: Why did the router bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_026.txt`: Why did the compiler bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_027.txt`: Why did the debugger bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_028.txt`: Why did the coffee mug bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_029.txt`: Why did the API bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_030.txt`: Why did the container bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_031.txt`: Why did the cloud instance bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_032.txt`: Why did the version control system bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_033.txt`: Why did the QA tester bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_034.txt`: Why did the automation script bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_035.txt`: Why did the UI component bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_036.txt`: Why did the command line bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_037.txt`: Why did the keyboard bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_038.txt`: Why did the mouse pointer bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_039.txt`: Why did the data scientist bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_040.txt`: Why did the product manager bring a ladder to stand-up? Because the blockers were through the roof.
+- `joke_041.txt`: Why did the server start a garden in production? Because it heard the environment needed seeding.
+- `joke_042.txt`: Why did the database start a garden in production? Because it heard the environment needed seeding.
+- `joke_043.txt`: Why did the frontend engineer start a garden in production? Because it heard the environment needed seeding.
+- `joke_044.txt`: Why did the backend engineer start a garden in production? Because it heard the environment needed seeding.
+- `joke_045.txt`: Why did the router start a garden in production? Because it heard the environment needed seeding.
+- `joke_046.txt`: Why did the compiler start a garden in production? Because it heard the environment needed seeding.
+- `joke_047.txt`: Why did the debugger start a garden in production? Because it heard the environment needed seeding.
+- `joke_048.txt`: Why did the coffee mug start a garden in production? Because it heard the environment needed seeding.
+- `joke_049.txt`: Why did the API start a garden in production? Because it heard the environment needed seeding.
+- `joke_050.txt`: Why did the container start a garden in production? Because it heard the environment needed seeding.
+- `joke_051.txt`: Why did the cloud instance start a garden in production? Because it heard the environment needed seeding.
+- `joke_052.txt`: Why did the version control system start a garden in production? Because it heard the environment needed seeding.
+- `joke_053.txt`: Why did the QA tester start a garden in production? Because it heard the environment needed seeding.
+- `joke_054.txt`: Why did the automation script start a garden in production? Because it heard the environment needed seeding.
+- `joke_055.txt`: Why did the UI component start a garden in production? Because it heard the environment needed seeding.
+- `joke_056.txt`: Why did the command line start a garden in production? Because it heard the environment needed seeding.
+- `joke_057.txt`: Why did the keyboard start a garden in production? Because it heard the environment needed seeding.
+- `joke_058.txt`: Why did the mouse pointer start a garden in production? Because it heard the environment needed seeding.
+- `joke_059.txt`: Why did the data scientist start a garden in production? Because it heard the environment needed seeding.
+- `joke_060.txt`: Why did the product manager start a garden in production? Because it heard the environment needed seeding.
+- `joke_061.txt`: Why did the server write poetry in the logs? Because it wanted more meaningful output.
+- `joke_062.txt`: Why did the database write poetry in the logs? Because it wanted more meaningful output.
+- `joke_063.txt`: Why did the frontend engineer write poetry in the logs? Because it wanted more meaningful output.
+- `joke_064.txt`: Why did the backend engineer write poetry in the logs? Because it wanted more meaningful output.
+- `joke_065.txt`: Why did the router write poetry in the logs? Because it wanted more meaningful output.
+- `joke_066.txt`: Why did the compiler write poetry in the logs? Because it wanted more meaningful output.
+- `joke_067.txt`: Why did the debugger write poetry in the logs? Because it wanted more meaningful output.
+- `joke_068.txt`: Why did the coffee mug write poetry in the logs? Because it wanted more meaningful output.
+- `joke_069.txt`: Why did the API write poetry in the logs? Because it wanted more meaningful output.
+- `joke_070.txt`: Why did the container write poetry in the logs? Because it wanted more meaningful output.
+- `joke_071.txt`: Why did the cloud instance write poetry in the logs? Because it wanted more meaningful output.
+- `joke_072.txt`: Why did the version control system write poetry in the logs? Because it wanted more meaningful output.
+- `joke_073.txt`: Why did the QA tester write poetry in the logs? Because it wanted more meaningful output.
+- `joke_074.txt`: Why did the automation script write poetry in the logs? Because it wanted more meaningful output.
+- `joke_075.txt`: Why did the UI component write poetry in the logs? Because it wanted more meaningful output.
+- `joke_076.txt`: Why did the command line write poetry in the logs? Because it wanted more meaningful output.
+- `joke_077.txt`: Why did the keyboard write poetry in the logs? Because it wanted more meaningful output.
+- `joke_078.txt`: Why did the mouse pointer write poetry in the logs? Because it wanted more meaningful output.
+- `joke_079.txt`: Why did the data scientist write poetry in the logs? Because it wanted more meaningful output.
+- `joke_080.txt`: Why did the product manager write poetry in the logs? Because it wanted more meaningful output.
+- `joke_081.txt`: Why did the server carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_082.txt`: Why did the database carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_083.txt`: Why did the frontend engineer carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_084.txt`: Why did the backend engineer carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_085.txt`: Why did the router carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_086.txt`: Why did the compiler carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_087.txt`: Why did the debugger carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_088.txt`: Why did the coffee mug carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_089.txt`: Why did the API carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_090.txt`: Why did the container carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_091.txt`: Why did the cloud instance carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_092.txt`: Why did the version control system carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_093.txt`: Why did the QA tester carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_094.txt`: Why did the automation script carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_095.txt`: Why did the UI component carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_096.txt`: Why did the command line carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_097.txt`: Why did the keyboard carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_098.txt`: Why did the mouse pointer carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_099.txt`: Why did the data scientist carry around a rubber duck? Because it quacks the toughest bugs.
+- `joke_100.txt`: Why did the product manager carry around a rubber duck? Because it quacks the toughest bugs.

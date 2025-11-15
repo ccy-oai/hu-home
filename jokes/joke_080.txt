@@ -1,0 +1,3 @@
+Dad Joke #080
+Why did the product manager write poetry in the logs?
+Because it wanted more meaningful output.
