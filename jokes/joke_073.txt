@@ -1,0 +1,3 @@
+Joke 073
+Why did the developer stash file 073 in the jokes folder?
+Because it cached the best giggles for rainy deploys.

@@ -1,0 +1,3 @@
+Joke 062
+Why did the developer stash file 062 in the jokes folder?
+Because linting it resulted in a burst of laughter.

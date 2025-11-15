@@ -1,0 +1,3 @@
+Joke 015
+Why did the developer stash file 015 in the jokes folder?
+Because its docstring moonlights as a stand-up routine.

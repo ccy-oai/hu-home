@@ -1,0 +1,3 @@
+Joke 034
+Why did the developer stash file 034 in the jokes folder?
+Because the build pipeline told it 'you're on stage now'.

@@ -1,0 +1,3 @@
+Joke 042
+Why did the developer stash file 042 in the jokes folder?
+Because linting it resulted in a burst of laughter.

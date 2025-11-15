@@ -1,0 +1,3 @@
+Joke 009
+Why did the developer stash file 009 in the jokes folder?
+Because code reviews always end with applause.
