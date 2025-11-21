@@ -20,3 +20,6 @@ flask run
 
 ## Try it out
 http://127.0.0.1:5000/
+
+## A quick laugh
+Why did the developer go broke? Because he used up all his cache.
