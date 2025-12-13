@@ -1,9 +1,46 @@
 <head>
     <title>Hu Home Test Client</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: "Trebuchet MS", sans-serif;
+            background: #fef7ea;
+            color: #3b2f2f;
+        }
+
+        .llama-banner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 24px 16px 16px;
+        }
+
+        .llama-banner img {
+            width: 160px;
+            height: 160px;
+            image-rendering: pixelated;
+        }
+
+        .llama-banner p {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .client-log {
+            padding: 16px;
+        }
+    </style>
 </head>
 <body>
-    <div>Loading...</div>
+    <section class="llama-banner">
+        <img src="{{ url_for('static', filename='llama.gif') }}" alt="Blinking llama" />
+        <p>Your llama is standing by.</p>
+    </section>
+    <div class="client-log">Loading...</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
     <script type="text/javascript" charset="utf-8">
         var sent = 0;
@@ -33,7 +70,8 @@
         }
 
         updateList = (clients) => {
-            document.body.innerHTML = "";
+            const log = document.querySelector('.client-log');
+            log.innerHTML = "";
             for (const id of Object.keys(clients)) {
                 if (!clients[id]) {
                     continue;
@@ -42,7 +80,7 @@
                 let ip = clients[id];
                 div = document.createElement('div');
                 div.innerText = `${JSON.stringify({[id]: {ip, geo, time: new Date(timestamp*1000)}})}`;
-                document.body.appendChild(div);
+                log.appendChild(div);
             }
         }
 
