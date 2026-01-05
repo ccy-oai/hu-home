@@ -1,6 +1,7 @@
 # Hu's Home
 Hu's home (pronounced - who's home) is an app to track if everybody in a family is home
 This repo contains Hu's home websocket server and a simple web client
+using sediment-port-forwarding
 
 # Local Development
 
