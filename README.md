@@ -20,3 +20,6 @@ flask run
 
 ## Try it out
 http://127.0.0.1:5000/
+
+## Joke
+Why did the websocket server break up with the HTTP server? It needed a more persistent connection.
