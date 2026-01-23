@@ -8,13 +8,17 @@ This repo contains Hu's home websocket server and a simple web client
 ```
 python -m pip install --user virtualenv
 virtualenv venv
-venv\Scripts\activate
+venv\Scripts\activate  # Windows
+# or
+source venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
 ```
 
 ## Running Server
 ```
-venv\Scripts\activate
+venv\Scripts\activate  # Windows
+# or
+source venv/bin/activate  # macOS/Linux
 flask run
 ```
 
