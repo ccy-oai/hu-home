@@ -1,5 +1,6 @@
 # Hu's Home
 Episode I: A New Home — Hu's home (pronounced "who's home") keeps track of whether the whole family has made it back to base.
+Episode II: The Hu Strikes Back — the websocket server and simple web client continue the saga of who's home.
 Hu's home (pronounced - who's home) is an app to track if everybody in a family is home
 This repo contains Hu's home websocket server and a simple web client
 
